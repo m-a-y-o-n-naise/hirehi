@@ -22,15 +22,6 @@ def test_search_vacancy(page):
 
     # 1. Проверка типа в названии
     job_cards = page.locator('.jobs-container .job-card').all()
-    # titles_texts = []
-    # for card in job_cards:
-    #     title = card.locator('.job-title').text_content()
-    #     titles_texts.append(title) #  all_text_contents() - выдает все текстовые результаты списком
-    # titles = []
-    # for text in titles_texts:
-    #     clean = re.search(r'\bmanual\b', text.lower())
-    #     titles.append(clean.group()if clean else None)
-    # assert all(t == 'manual' for t in titles), f'Проблемные вакансии: {titles}'
     titles_texts = [card.locator('.job-title').text_content() for card in job_cards if card.is_visible()]
 
     titles = [re.search(r'\bmanual\b', text.lower()).group()
@@ -42,7 +33,7 @@ def test_search_vacancy(page):
     salary_texts = page.locator('.job-salary').all_text_contents()
     salaries = []
     for text in salary_texts:
-        clean = text.replace('до', '').replace('₽', '').replace(' ', '').strip().replace('от', '').replace('~', '').replace('-', '') # "до 200 000 ₽" → 200000
+        clean = re.sub(r'[^\d]', '', text)  # только цифры
         try:
             salaries.append(int(clean))
         except:
