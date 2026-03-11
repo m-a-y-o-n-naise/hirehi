@@ -1,6 +1,8 @@
 import pytest
 import allure
 from playwright.sync_api import sync_playwright
+from test.hirehi.pages.login_page import LoginPage
+from test.hirehi.pages.dashboard_page import DashboardPages
 
 
 @pytest.fixture(scope="function")
@@ -53,3 +55,12 @@ def pytest_runtest_makereport(item, call):
     outcome = yield # ← Здесь выполняется сам тест
     rep = outcome.get_result()  # ← Результат после выполнения
     setattr(item, "rep_" + rep.when, rep) # ← Сохраняем результат
+
+@pytest.fixture
+def login_page(page):
+    return LoginPage(page)
+
+
+@pytest.fixture
+def dashboard_page(page):
+    return DashboardPages(page)
