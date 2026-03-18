@@ -2,7 +2,7 @@ import pytest
 import allure
 from playwright.sync_api import sync_playwright
 from test.hirehi.pages.login_page import LoginPage
-from test.hirehi.pages.dashboard_page import DashboardPages
+from test.hirehi.pages.dashboard_search_page import DashboardPages
 
 
 @pytest.fixture(scope="function")
