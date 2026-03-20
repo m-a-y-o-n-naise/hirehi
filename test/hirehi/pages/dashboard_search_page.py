@@ -208,8 +208,11 @@ class SearchPage:
     filter_name может быть: 'format', 'level', 'salary', 'hirehi', 'direct_contact', 'english', 'region', 'country'
         """
     # Определяем тип фильтра по константам класса
+    #     if filter_name == 'format':
+    #         pattern = re.compile(f"^{filter_value}")
+    #         filter_locator = self.page.locator(f".filter-chip").filter(has_text=pattern).first
         if filter_name == 'format':
-            filter_locator = self.page.locator(f".filter-chip:has-text('{filter_value}')")
+            filter_locator = self.page.locator(f'.chip-text:text-is("{filter_value}")').locator('xpath=..')
 
         elif filter_name == 'level':
             # Проверяем, что значение есть в списке GRADES
@@ -252,6 +255,7 @@ class SearchPage:
 
     def get_job_cards(self) -> List:
         """Получить все видимые карточки вакансий"""
+        self.page.wait_for_timeout(500)
         visible_cards = [card for card in self.job_cards.all() if card.is_visible()]
         # для отладки
         all_cards = self.job_cards.all()
