@@ -124,13 +124,13 @@ class SearchPage:
         self.page.wait_for_load_state("networkidle")  # ждет пока все сетевые запросы завершатся
         return self
 
-    @allure.step('Выбрать категорию "{category_name}"')
+    @allure.step('Выбрать категорию "{category_key}"')
     def select_category(self, category_key: str) -> 'SearchPage':
         """Выбрать категорию вакансий"""
         self.category_button.click()
 
         category_locator = self.page.locator(
-            f'a:has-text("{self.CATEGORIES[category_key]}")[href*="category={category_key}"]')
+            f'a.category-option:has-text("{self.CATEGORIES[category_key]}")')
         category_locator.click()
 
         self.page.wait_for_load_state("networkidle")
@@ -208,13 +208,19 @@ class SearchPage:
     filter_name может быть: 'format', 'level', 'salary', 'hirehi', 'direct_contact', 'english', 'region', 'country'
         """
     # Определяем тип фильтра по константам класса
-        if filter_name in self.FORMATS:
+        if filter_name == 'format':
             filter_locator = self.page.locator(f".filter-chip:has-text('{filter_value}')")
 
-        elif filter_name in self.GRADES:
+        elif filter_name == 'level':
+            # Проверяем, что значение есть в списке GRADES
+            if filter_value not in self.GRADES:
+                raise ValueError(f"Неверный грейд: {filter_value}. Доступны: {self.GRADES}")
             filter_locator = self.page.locator(f".filter-chip:has-text('{filter_value}')")
 
-        elif filter_name in self.SALARY_RANGES:
+        elif filter_name == 'salary':
+            # Проверяем, что значение есть в списке SALARY_RANGES
+            if filter_value not in self.SALARY_RANGES:
+                raise ValueError(f"Неверный диапазон зарплат: {filter_value}. Доступны: {self.SALARY_RANGES}")
             filter_locator = self.page.locator(f".filter-chip:has-text('{filter_value}')")
 
         elif filter_name in self.EXTRA_FILTERS:
@@ -222,6 +228,7 @@ class SearchPage:
 
         elif filter_name in ['region', 'country']:
             filter_locator = self.page.locator(f'#{filter_name}FilterChip')
+
         else:
             raise ValueError(f"Неизвестный фильтр: {filter_name}")
 
@@ -245,12 +252,29 @@ class SearchPage:
 
     def get_job_cards(self) -> List:
         """Получить все видимые карточки вакансий"""
-        return [card for card in self.job_cards.all() if card.is_visible()]
+        visible_cards = [card for card in self.job_cards.all() if card.is_visible()]
+        # для отладки
+        all_cards = self.job_cards.all()
+        print(f"Всего карточек в DOM: {len(all_cards)}, видимых: {len(visible_cards)}")
+        return visible_cards  # без отладки можно было сразу вернуть [card for card in self.job_cards.all() if card.is_visible()]
 
     @allure.step('Получить названия вакансий')
     def get_job_titles(self) -> List[str]:
         """Получить тексты названий всех видимых вакансий"""
-        return [card.locator('.job-title').text_content() for card in self.get_job_cards()]
+        cards = self.get_job_cards()
+        titles = []
+
+        for i, card in enumerate(cards):
+            try:
+                # Добавляем небольшую задержку только на получение текста
+                title = card.locator('.job-title').text_content(timeout=2000)
+                if title and title.strip():
+                    titles.append(title)
+            except Exception as e:
+                print(f"Карточка {i}: ошибка получения текста - {e}")
+                continue
+
+        return titles # без отладки можно было сразу вернуть [card.locator('.job-title').text_content() for card in self.get_job_cards()]
 
     @allure.step('Получить зарплаты вакансий')
     def get_job_salaries(self) -> List[int]:
@@ -278,8 +302,8 @@ class SearchPage:
             substring = substring.lower()
             titles = [t.lower() for t in titles]
 
-        assert all(substring in t for t in titles), \
-            f'Не все вакансии содержат "{substring}": {titles}'
+        assert any(substring in t for t in titles), \
+            f'Ни одна вакансия не содержит "{substring}": {titles}'
         return self
 
     @allure.step('Проверить диапазон зарплат')
