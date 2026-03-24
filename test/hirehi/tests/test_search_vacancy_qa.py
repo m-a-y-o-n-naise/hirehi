@@ -1,9 +1,12 @@
 from test.hirehi.pages.dashboard_search_page import SearchPage
+import allure
 import pytest
 # import re
 # from playwright.sync_api import expect
 
-
+@allure.feature("Поиск вакансий для тестировщиков")
+@allure.story("Поиск категории с подкатегорией, текстом и зп")
+@allure.severity(allure.severity_level.CRITICAL)
 def test_search_vacancy(page) -> None:
     """Проверка поиска вакансии тестировщика"""
     search_page = SearchPage(page)
