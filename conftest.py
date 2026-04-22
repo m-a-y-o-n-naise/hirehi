@@ -31,7 +31,7 @@ def page(request):
             locale='ru-RU'
         ) #  метод, который создает новый контекст браузера
         # создаются свои cookies, локальное хранилище (localStorage), история, настройки (размер окна, геолокация и т.д.)
-        # Это позволяет изолировать тесты друг от друга. Ты можешь создать >=2 контекста в одном браузере
+        # Изолируем тесты друг от друга. Для создания >=2 контекста в одном браузере
 
         page = context.new_page() #  создает новую вкладку (страницу) внутри текущего контекста
         page.set_default_timeout(10000)  # 10 секунд
@@ -52,9 +52,9 @@ def page(request):
 # Хук для отслеживания результата теста
 @pytest.hookimpl(tryfirst=True, hookwrapper=True)
 def pytest_runtest_makereport(item, call):
-    outcome = yield # ← Здесь выполняется сам тест
-    rep = outcome.get_result()  # ← Результат после выполнения
-    setattr(item, "rep_" + rep.when, rep) # ← Сохраняем результат
+    outcome = yield # Момент выполнения теста
+    rep = outcome.get_result()  # Результат после выполнения
+    setattr(item, "rep_" + rep.when, rep)
 
 @pytest.fixture
 def login_page(page):
