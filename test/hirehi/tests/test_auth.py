@@ -10,7 +10,9 @@ from test.hirehi.pages.mail_tm_page import MailTmHelper
 def test_valid_login(login_page):
     login_page.navigate()
     login_page.login_btn_click()
-    login_page.get_link_login('некорректный_email')
+    login_page.consent_proc_data()
+    login_page.link_to_auth()
+    login_page.get_link_login('invalid_email')
 
     assert login_page.get_error_message() == 'Введите корректный email'
 
@@ -21,6 +23,8 @@ def test_valid_login(login_page):
 def test_login_success(login_page):
     login_page.navigate()
     login_page.login_btn_click()
+    login_page.consent_proc_data()
+    login_page.link_to_auth()
     email = MailTmHelper().create_account()
     login_page.get_link_login(email)
 
@@ -33,6 +37,8 @@ def test_login_success(login_page):
 def test_login_success(login_page, page):
     login_page.navigate()
     login_page.login_btn_click()
+    login_page.consent_proc_data()
+    login_page.link_to_auth()
     mail_helper = MailTmHelper()
     email = mail_helper.create_account()
     login_page.get_link_login(email)
