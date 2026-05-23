@@ -30,21 +30,22 @@ class SearchPage:
         'management': 'менеджерам',
         'qa': 'тестировщикам',
         'analytics': 'аналитикам',
+        'marketing': 'маркетологам',
         'devops': 'девопсам'
     }
 
     # Подкатегории для каждой категории
     SUBCATEGORIES = {
         'qa': {
-            'manual': 'Manual',
-            'auto': 'Auto'
+            'manual': 'Manual QA',
+            'auto': 'QA Automation'
         },
         'design': {
             'ux_ui': 'UX/UI',
-            'product': 'Product Design',
-            'web': 'Web',
-            'graphic': 'Graphic',
-            'illustration': 'Illustration'
+            'product': 'Продуктовый дизайн',
+            'web': 'Web-дизайн',
+            'graphic': 'Графический дизайн',
+            'illustration': 'Иллюстрация'
         },
         'development': {
             'python': 'Python',
@@ -65,14 +66,22 @@ class SearchPage:
             'fullstack': 'Fullstack'
         },
         'management': {
-            'product_manager': 'Product Manager',
-            'project_manager': 'Project Manager'
+            'product_manager': 'Менеджер продукта',
+            'project_manager': 'Менеджер проектов'
         },
         'analytics': {
-            'data_analyst': 'Data Analyst',
-            'business_analyst': 'Business Analyst',
-            'product_analyst': 'Product Analyst',
-            'system_analyst': 'System Analyst'
+            'data_analyst': 'Аналитик данных',
+            'business_analyst': 'Бизнес-аналитик',
+            'product_analyst': 'Продуктовый аналитик',
+            'system_analyst': 'Системный аналитик'
+        },
+        'marketing': {
+            'general_marketing': 'Общий маркетинг',
+            'perfomance_ua': 'Платный трафик',
+            'seo_aso_orm': 'SEO / ASO / Репутация',
+            'crm_lifecycle': 'CRM и удержание',
+            'smm_community': 'SMM и сообщества',
+            'content_creative': 'Контент и креатив'
         },
         'devops': {
             'ci_cd': 'CI/CD',
@@ -145,8 +154,12 @@ class SearchPage:
         current_url = self.page.url  # получаем текущую категорию из URL /?category=qa
         current_category = None
 
+        # for k in self.CATEGORIES.keys():
+        #     if f"category={k}" in current_url:
+        #         current_category = k
+        #         break
         for k in self.CATEGORIES.keys():
-            if f"category={k}" in current_url:
+            if k in current_url:
                 current_category = k
                 break
 
@@ -242,7 +255,8 @@ class SearchPage:
     @allure.step('Выполнить поиск по тексту "{search_text}"')
     def search(self, search_text: str) -> 'SearchPage':
         """Ввести текст в поиск и выполнить поиск"""
-        self.search_input.fill(search_text)
+        modified_text = f'+{search_text}'
+        self.search_input.fill(modified_text)
         self.search_input.press("Enter")
         self.page.wait_for_load_state("networkidle")
         return self
@@ -251,6 +265,7 @@ class SearchPage:
     def wait_for_results(self, timeout: int = 10000) -> 'SearchPage':
         """Дождаться загрузки карточек вакансий"""
         self.page.wait_for_selector('.job-card-body', state="visible", timeout=timeout)
+        self.page.wait_for_timeout(1000)
         return self
 
     def get_job_cards(self) -> List:
