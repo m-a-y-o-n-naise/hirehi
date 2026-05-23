@@ -64,4 +64,3 @@ def test_search_vacancy(page) -> None:
     # # 3. Проверка грейда
     # levels = page.locator('.job-level').all_text_contents()
     # assert all('middle' in l.lower() for l in levels), "Есть вакансии не middle"
-
