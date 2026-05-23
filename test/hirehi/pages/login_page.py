@@ -7,7 +7,7 @@ class LoginPage:
         self.page = page
         self.entry = page.locator('#btnLogin')
         self.email_login = page.locator('#loginEmailInput')
-        self.get_link_log = page.locator('#btnSendMagicLink')
+        self.get_link_log = page.locator('#btnResetPasswordSubmit')
         self.error_message = page.locator('.toast.error.show')  # сообщение об ошибке
         self.success_message = page.locator('.toast.success.show')  # сообщение об успехе
         # self.success_login_message = page.locator('.toast.success.show')
@@ -15,8 +15,11 @@ class LoginPage:
 
         # закомментил до лучших времен, если появится авторизация по логину и паролю
         # self.username_input = page.locator('#username')
-        # self.password_input = page.locator('#password')
+        self.password_input = page.locator('#loginPasswordInput')
         # self.login_button = page.locator('#login')
+        self.reset_password_btn = page.get_by_role("button", name="Получить письмо")
+        self.approve_btn = page.locator('#loginConsentCheckboxVisual')
+        self.res_email = page.locator('#resetPasswordEmailInput')
 
     def goto_page(self, url_page: str) -> None:
         with allure.step('Переход на страницу по ссылке'):
@@ -27,13 +30,21 @@ class LoginPage:
             self.page.goto('https://hirehi.ru')
             self.email_login.wait_for(state="attached")  # необзятальное ожидание pw сам ждет
 
+    def consent_proc_data(self) -> None:
+        with allure.step('активировать чек-бокс согласия на обработку перс. данных'):
+            self.approve_btn.click()
+
     def login_btn_click(self) -> None:
         with allure.step('Жмём кнопку "Войти"'):
             self.login_btn.click()
 
+    def link_to_auth(self) -> None:
+        with allure.step('Жмём кнопку "Получить письмо"'):
+            self.reset_password_btn.click()
+
     def get_link_login(self, email) -> None:
         with allure.step('Ввод почты для получения ссылки'):
-            self.email_login.fill(email)
+            self.res_email.fill(email)
             self.get_link_log.click()
 
     # def login(self, username: str, password: str) -> None:
