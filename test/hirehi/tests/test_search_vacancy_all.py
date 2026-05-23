@@ -37,6 +37,11 @@ class TestVacancySearch:
         ("devops", "kubernetes", "docker"),
         ("devops", "cloud", "aws"),
         ("devops", "security", "security"),
+
+        # Marketer
+        ("marketing", "general_marketing", "B2C"),
+        ("marketing", "seo_aso_orm", "Semrush"),
+        ("marketing", "smm_community", "TikTok"),
     ])
     def test_search_with_subcategory(self, page, category, subcategory, search_text):
         """Тест поиска с различными категориями и подкатегориями"""
@@ -96,7 +101,7 @@ class TestVacancySearch:
     @allure.severity(allure.severity_level.CRITICAL)
     @pytest.mark.parametrize("category,subcategory,grade,salary_range,search_text", [
         # QA
-        ("qa", "manual", "middle", "151–250k", "manual"),
+        ("qa", "manual", "middle", "151–250k", "python"),
         ("qa", "auto", "senior", "250k+", "selenium"),
 
         # Development
@@ -106,7 +111,7 @@ class TestVacancySearch:
 
         # DevOps
         ("devops", "kubernetes", "senior", "250k+", "kubernetes"),
-        ("devops", "cloud", "middle", "151–250k", "aws"),
+        ("devops", "cloud", "middle", "151–250k", "Bash"),
     ])
     def test_comprehensive_search(self, page, category, subcategory, grade, salary_range, search_text):
         """Полный тест со всеми фильтрами"""
