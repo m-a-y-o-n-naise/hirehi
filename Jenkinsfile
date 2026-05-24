@@ -1,10 +1,5 @@
 pipeline {
-    agent {
-        docker {
-            image 'python:3.11-slim'
-            args '-u 0:0'
-        }
-    }
+    agent any  // Используем любой доступный агент
 
     environment {
         PLAYWRIGHT_BROWSERS_PATH = '/tmp/playwright'
@@ -18,16 +13,26 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Setup Python Environment') {
             steps {
-                sh 'pip install --no-cache-dir -r requirements.txt'
-                sh 'playwright install chromium || exit 1'  // прерываем пайплайн при ошибке установки
-            }
+                script {
+                    // Проверяем, что Python 3.11 установлен
+            sh 'python3.11 --version || python --version'
+
+            // Создаём виртуальное окружение
+            sh 'python3.11 -m venv venv || python -m venv venv'
+            sh 'source venv/bin/activate'
+
+            // Устанавливаем зависимости
+            sh 'pip install --no-cache-dir -r requirements.txt'
+            sh 'playwright install chromium'
         }
+    }
+}
 
         stage('Run All Tests') {
             options {
-                timeout(time: 30, unit: 'MINUTES')  // тайм‑аут 30 минут
+                timeout(time: 30, unit: 'MINUTES')  // Тайм‑аут 30 минут
             }
             steps {
                 script {
@@ -35,11 +40,12 @@ pipeline {
                         sh '''
                             mkdir -p allure-results reports
                             if [ -d "test/hirehi/tests" ]; then
-                        pytest test/hirehi/tests/ \
-                            --alluredir=allure-results \
-                            --html=reports/test-report.html \
-                            --self-contained-html \
-                            -n auto
+                                source venv/bin/activate
+                pytest test/hirehi/tests/ \
+                    --alluredir=allure-results \
+            --html=reports/test-report.html \
+            --self-contained-html \
+            -n auto
             else
                 echo "Ошибка: директория test/hirehi/tests не найдена!"
                 exit 1
@@ -47,7 +53,7 @@ pipeline {
         '''
             } catch (e) {
                 echo "Тесты завершились с ошибками: ${e.getMessage()}"
-                throw e  // прерываем пайплайн при ошибке
+                throw e
             }
         }
     }
@@ -57,9 +63,9 @@ pipeline {
             steps {
                 allure([
                     includeProperties: false,
-                    jdk: '',
-                    properties: [],
-                    reportBuildPolicy: 'ALWAYS'
+            jdk: '',
+            properties: [],
+            reportBuildPolicy: 'ALWAYS'
                 ])
             }
         }
@@ -68,9 +74,9 @@ pipeline {
             steps {
                 publishHTML([
                     allowMissing: false,
-                    alwaysLinkToLastBuild: true,
-                    keepAll: true,
-                    reportDir: 'reports',
+            alwaysLinkToLastBuild: true,
+            keepAll: true,
+            reportDir: 'reports',
             reportFiles: 'test-report.html',
             reportName: 'HTML Test Report'
                 ])
