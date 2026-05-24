@@ -3,22 +3,25 @@ stages:
 
 .test_template: &test_template
   stage: test
-  image: python:3.11-slim
   before_script:
-    - apt-get update && apt-get install -y unzip libnss3 libatk-bridge2.0-0 && rm -rf /var/lib/apt/lists/*
+    - echo "Python version:"
+    - python3.11 --version || python --version
+    - python3.11 -m venv venv || python -m venv venv
+    - source venv/bin/activate
     - pip install --no-cache-dir -r requirements.txt
     - playwright install chromium
   script:
     - mkdir -p allure-results reports
-    - if [ -d "test/hirehi/tests" ]; then
+    - |
+      if [ -d "test/hirehi/tests" ]; then
         pytest test/hirehi/tests/ \
           --alluredir=allure-results \
           --html=reports/test-report.html \
           --self-contained-html \
-          -n auto;
+          -n auto
       else
-        echo "Ошибка: директория test/hirehi/tests не найдена!";
-        exit 1;
+        echo "Ошибка: директория test/hirehi/tests не найдена!"
+        exit 1
       fi
   artifacts:
     paths:
@@ -26,9 +29,7 @@ stages:
       - reports/
     expire_in: 1 week
   after_script:
-    - echo "Pipeline completed"
-  tags:
-    - docker
+    - echo "Pipeline completed successfully"
 
 run_tests:
   <<: *test_template
