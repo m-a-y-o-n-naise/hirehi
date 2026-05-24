@@ -1,0 +1,54 @@
+stages:
+  - test
+
+.test_template: &test_template
+  stage: test
+  image: python:3.11-slim
+  before_script:
+    - apt-get update && apt-get install -y unzip libnss3 libatk-bridge2.0-0 && rm -rf /var/lib/apt/lists/*
+    - pip install --no-cache-dir -r requirements.txt
+    - playwright install chromium
+  script:
+    - mkdir -p allure-results reports
+    - if [ -d "test/hirehi/tests" ]; then
+        pytest test/hirehi/tests/ \
+          --alluredir=allure-results \
+          --html=reports/test-report.html \
+          --self-contained-html \
+          -n auto;
+      else
+        echo "Ошибка: директория test/hirehi/tests не найдена!";
+        exit 1;
+      fi
+  artifacts:
+    paths:
+      - allure-results/
+      - reports/
+    expire_in: 1 week
+  after_script:
+    - echo "Pipeline completed"
+  tags:
+    - docker
+
+run_tests:
+  <<: *test_template
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+generate_allure_report:
+  stage: test
+  image: adoptopenjdk:11-jre-hotspot
+  script:
+    - wget https://repo.maven.apache.org/maven2/io/qameta/allure/allure-commandline/2.25.0/allure-commandline-2.25.0.zip
+    - unzip -q allure-commandline-*.zip
+    - allure generate allure-results -o allure-report --clean
+  artifacts:
+    paths:
+      - allure-report/
+    expire_in: 1 week
+    reports:
+      html: allure-report/index.html
+  needs: ["run_tests"]
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" || $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
